@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  --color-navy-950: #0a1633;
+  --color-navy-900: #101f45;
+  --color-brand-600: #1b5bd7;
+  --color-brand-700: #1549ad;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #eef2f7;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
