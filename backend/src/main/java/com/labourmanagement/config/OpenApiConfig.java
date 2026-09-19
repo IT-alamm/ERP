@@ -15,7 +15,7 @@ public class OpenApiConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info().title("Labour Management API").version("v1")
-                        .description("Modular monolith - MySQL. Docker/Redis/S3/Payment baad me."))
+                        .description("Modular monolith - PostgreSQL (Supabase). Docker/Redis/S3/Payment baad me."))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components().addSecuritySchemes("bearerAuth",
                         new SecurityScheme().name("bearerAuth").type(SecurityScheme.Type.HTTP)

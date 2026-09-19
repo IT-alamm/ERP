@@ -14,12 +14,14 @@ import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { Btn, Field, Input, ErrorText } from '../../components/ui';
 import { extractError } from '../../services/api';
+import { useKeyboardScroll } from '../../hooks/useKeyboardScroll';
 
 const ROLES = ['ROLE_ADMIN', 'ROLE_LABOUR'] as const;
 
 export default function LoginScreen() {
   const navigation = useNavigation<any>();
   const { login, role } = useAuth();
+  const { scrollRef, handleLayout, scrollToField } = useKeyboardScroll();
 
   const [selectedRole, setSelectedRole] = useState<string>(ROLES[0]);
   const [username, setUsername] = useState('');
@@ -56,9 +58,10 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={s.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={s.scroll}
         keyboardShouldPersistTaps="handled"
       >
@@ -89,24 +92,33 @@ export default function LoginScreen() {
             })}
           </View>
 
-          <Field label="Username">
-            <Input
-              placeholder="Enter your username"
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </Field>
+          <View onLayout={handleLayout('username')}>
+            <Field label="Username">
+              <Input
+                placeholder="Enter your username"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                onFocus={() => scrollToField('username')}
+              />
+            </Field>
+          </View>
 
-          <Field label="Password">
-            <Input
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-          </Field>
+          <View onLayout={handleLayout('password')}>
+            <Field label="Password">
+              <Input
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={handleSubmit}
+                onFocus={() => scrollToField('password')}
+              />
+            </Field>
+          </View>
 
           <ErrorText message={error} />
 

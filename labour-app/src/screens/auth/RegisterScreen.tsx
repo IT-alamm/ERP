@@ -14,9 +14,11 @@ import { useNavigation } from '@react-navigation/native';
 import { colors } from '../../theme/colors';
 import { Btn, Field, Input, ErrorText } from '../../components/ui';
 import { api, extractError } from '../../services/api';
+import { useKeyboardScroll } from '../../hooks/useKeyboardScroll';
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
+  const { scrollRef, handleLayout, scrollToField } = useKeyboardScroll();
 
   const [form, setForm] = useState({
     username: '',
@@ -60,9 +62,10 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       style={s.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={s.scroll}
         keyboardShouldPersistTaps="handled"
       >
@@ -76,57 +79,74 @@ export default function RegisterScreen() {
           <Text style={s.cardSub}>Register as an administrator to get started.</Text>
 
           <View style={s.row}>
-            <View style={s.halfField}>
+            <View style={s.halfField} onLayout={handleLayout('firstName')}>
               <Field label="First Name">
                 <Input
                   placeholder="First name"
                   value={form.firstName}
                   onChangeText={set('firstName')}
                   autoCorrect={false}
+                  returnKeyType="next"
+                  onFocus={() => scrollToField('firstName')}
                 />
               </Field>
             </View>
-            <View style={s.halfField}>
+            <View style={s.halfField} onLayout={handleLayout('lastName')}>
               <Field label="Last Name">
                 <Input
                   placeholder="Last name"
                   value={form.lastName}
                   onChangeText={set('lastName')}
                   autoCorrect={false}
+                  returnKeyType="next"
+                  onFocus={() => scrollToField('lastName')}
                 />
               </Field>
             </View>
           </View>
 
-          <Field label="Username">
-            <Input
-              placeholder="Choose a username"
-              value={form.username}
-              onChangeText={set('username')}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </Field>
+          <View onLayout={handleLayout('username')}>
+            <Field label="Username">
+              <Input
+                placeholder="Choose a username"
+                value={form.username}
+                onChangeText={set('username')}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                onFocus={() => scrollToField('username')}
+              />
+            </Field>
+          </View>
 
-          <Field label="Email">
-            <Input
-              placeholder="Enter your email"
-              value={form.email}
-              onChangeText={set('email')}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoCorrect={false}
-            />
-          </Field>
+          <View onLayout={handleLayout('email')}>
+            <Field label="Email">
+              <Input
+                placeholder="Enter your email"
+                value={form.email}
+                onChangeText={set('email')}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoCorrect={false}
+                returnKeyType="next"
+                onFocus={() => scrollToField('email')}
+              />
+            </Field>
+          </View>
 
-          <Field label="Password">
-            <Input
-              placeholder="Create a password"
-              value={form.password}
-              onChangeText={set('password')}
-              secureTextEntry
-            />
-          </Field>
+          <View onLayout={handleLayout('password')}>
+            <Field label="Password">
+              <Input
+                placeholder="Create a password"
+                value={form.password}
+                onChangeText={set('password')}
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={handleSubmit}
+                onFocus={() => scrollToField('password')}
+              />
+            </Field>
+          </View>
 
           <ErrorText message={error} />
 

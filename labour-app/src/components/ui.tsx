@@ -6,6 +6,8 @@ import {
   TextInput,
   Modal as RNModal,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   type TextInputProps,
 } from 'react-native';
@@ -128,6 +130,10 @@ export function ErrorText({ message }: { message: string | null }) {
 export function AppModal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   return (
     <RNModal transparent animationType="slide">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={s.modalAvoid}
+      >
       <View style={s.modalOverlay}>
         <View style={s.modalContent}>
           <View style={s.modalHeader}>
@@ -136,9 +142,10 @@ export function AppModal({ title, onClose, children }: { title: string; onClose:
               <Text style={s.modalClose}>✕</Text>
             </TouchableOpacity>
           </View>
-          <ScrollView style={s.modalBody}>{children}</ScrollView>
+          <ScrollView style={s.modalBody} keyboardShouldPersistTaps="handled">{children}</ScrollView>
         </View>
       </View>
+      </KeyboardAvoidingView>
     </RNModal>
   );
 }
@@ -249,6 +256,9 @@ const s = StyleSheet.create({
   errorText: {
     fontSize: 13,
     color: colors.red[700],
+  },
+  modalAvoid: {
+    flex: 1,
   },
   modalOverlay: {
     flex: 1,

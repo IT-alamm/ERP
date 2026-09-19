@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS payroll (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     labour_id BIGINT NOT NULL,
     pay_period VARCHAR(7) NOT NULL,
     total_days INT,
@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS payroll (
     gross_salary DECIMAL(12, 2),
     net_salary DECIMAL(12, 2),
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
-    generated_at DATETIME,
-    paid_at DATETIME,
-    created_at DATETIME,
+    generated_at TIMESTAMP,
+    paid_at TIMESTAMP,
+    created_at TIMESTAMP,
     CONSTRAINT uk_payroll_labour_period UNIQUE (labour_id, pay_period)
 );
 CREATE INDEX idx_payroll_labour ON payroll (labour_id);

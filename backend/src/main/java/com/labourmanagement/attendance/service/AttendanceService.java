@@ -6,6 +6,7 @@ import com.labourmanagement.attendance.repository.AttendanceRepository;
 import com.labourmanagement.audit.service.AuditService;
 import com.labourmanagement.common.enums.AttendanceStatus;
 import com.labourmanagement.common.exception.*;
+import com.labourmanagement.labour.entity.Labour;
 import com.labourmanagement.labour.repository.LabourRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,10 +35,25 @@ public class AttendanceService {
                 a.getWorkingHours(), a.getOvertimeHours(), a.getRemarks());
     }
 
+    private void validateMarkableDate(Labour labour, LocalDate date) {
+        if (date == null) {
+            throw new BadRequestException("Attendance date is required");
+        }
+        LocalDate today = LocalDate.now();
+        if (date.isAfter(today)) {
+            throw new BadRequestException("Future date par attendance mark nahi ho sakti: " + date);
+        }
+        if (labour.getJoiningDate() != null && date.isBefore(labour.getJoiningDate())) {
+            throw new BadRequestException("Joining date (" + labour.getJoiningDate()
+                    + ") se pehle attendance mark nahi ho sakti");
+        }
+    }
+
     @Transactional
     public AttendanceResponse mark(MarkAttendanceRequest req) {
-        labourRepository.findById(req.labourId())
+        Labour labour = labourRepository.findById(req.labourId())
                 .orElseThrow(() -> new ResourceNotFoundException("Labour not found: " + req.labourId()));
+        validateMarkableDate(labour, req.attendanceDate());
         if (attendanceRepository.findByLabourIdAndAttendanceDate(req.labourId(), req.attendanceDate()).isPresent()) {
             throw new DuplicateResourceException("Attendance already marked for this date");
         }
@@ -127,8 +143,9 @@ public class AttendanceService {
 
     @Transactional
     public AttendanceResponse toggle(ToggleAttendanceRequest req) {
-        labourRepository.findById(req.labourId())
+        Labour labour = labourRepository.findById(req.labourId())
                 .orElseThrow(() -> new ResourceNotFoundException("Labour not found: " + req.labourId()));
+        validateMarkableDate(labour, req.attendanceDate());
         var existing = attendanceRepository.findByLabourIdAndAttendanceDate(req.labourId(), req.attendanceDate());
         if (existing.isPresent()) {
             Attendance a = existing.get();

@@ -1,0 +1,16 @@
+# One-command prod run:  docker compose -f backend/docker-compose.yml up -d --build
+# Needs backend/.env (copy from .env.example, fill real values - never commit it).
+services:
+  api:
+    build: .
+    image: labour-management:latest
+    ports:
+      - "8080:8080"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped

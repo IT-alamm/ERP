@@ -47,6 +47,13 @@ function getFirstDayOfWeek(year: number, month: number) {
   return new Date(year, month, 1).getDay();
 }
 
+const toISO = (y: number, m0: number, d: number) =>
+  `${y}-${String(m0 + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+// Us din attendance mark ho sakti hai ya nahi: joining se pehle nahi, future me nahi.
+const isMarkable = (joiningDate: string | null, iso: string, todayISO: string) =>
+  iso <= todayISO && (!joiningDate || iso >= joiningDate);
+
 export default function AttendanceScreen() {
   const navigation = useNavigation<any>();
   const now = new Date();
@@ -66,12 +73,9 @@ export default function AttendanceScreen() {
 
   const buildEmptyGrid = useCallback((labourList: Labour[], y: number, m: number, dim: number) => {
     const grid: Record<string, string> = {};
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     labourList.forEach((l) => {
       for (let d = 1; d <= dim; d++) {
-        const dt = new Date(y, m, d);
-        grid[`${l.id}-${d}`] = dt > today ? 'A' : '';
+        grid[`${l.id}-${d}`] = '';
       }
     });
     return grid;
@@ -117,10 +121,11 @@ export default function AttendanceScreen() {
     setRefreshing(false);
   }, [fetchAll]);
 
-  const toggle = useCallback((labourId: number, day: number) => {
+  const toggle = useCallback((labourId: number, day: number, joiningDate: string | null) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (new Date(year, month, day) > today) return;
+    if (joiningDate && toISO(year, month, day) < joiningDate) return;
 
     setChanges((prev) => {
       const key = `${labourId}-${day}`;
@@ -137,7 +142,10 @@ export default function AttendanceScreen() {
     labours.forEach((l) => {
       for (let d = 1; d <= daysInMonth; d++) {
         const dt = new Date(year, month, d);
-        grid[`${l.id}-${d}`] = dt <= today ? 'P' : 'A';
+        const iso = toISO(year, month, d);
+        if (dt > today) continue;
+        if (l.joiningDate && iso < l.joiningDate) continue;
+        grid[`${l.id}-${d}`] = 'P';
       }
     });
     setChanges(grid);
@@ -149,14 +157,16 @@ export default function AttendanceScreen() {
       const items: { labourId: number; attendanceDate: string; status: string }[] = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const joinById: Record<number, string | null> = {};
+      labours.forEach((l) => { joinById[l.id] = l.joiningDate; });
+      const todayISO = toISO(today.getFullYear(), today.getMonth(), today.getDate());
       Object.entries(changes).forEach(([key, status]) => {
         if (!status) return;
         const [labourIdStr, dayStr] = key.split('-');
         const labourId = Number(labourIdStr);
         const day = Number(dayStr);
-        const dt = new Date(year, month, day);
-        if (dt > today) return;
-        const iso = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+        const iso = toISO(year, month, day);
+        if (!isMarkable(joinById[labourId] ?? null, iso, todayISO)) return;
         const apiStatus = status === 'P' ? 'PRESENT' : status === 'H' ? 'HALF_DAY' : status === 'L' ? 'LEAVE' : 'ABSENT';
         items.push({ labourId, attendanceDate: iso, status: apiStatus });
       });
@@ -172,7 +182,7 @@ export default function AttendanceScreen() {
       Alert.alert('Error', extractError(e));
     }
     setSaving(false);
-  }, [changes, year, month, fetchAll]);
+  }, [changes, year, month, labours, fetchAll]);
 
   const filteredLabours = useMemo(() => {
     const q = search.toLowerCase();
@@ -231,18 +241,32 @@ export default function AttendanceScreen() {
                 <View style={s.nameCol}>
                   <Text style={s.nameText} numberOfLines={1}>{l.firstName} {l.lastName}</Text>
                   <Text style={s.desigText} numberOfLines={1}>{l.employeeCode}</Text>
+                  <Text style={s.desigText} numberOfLines={1}>Joined {l.joiningDate ?? '—'}</Text>
                 </View>
                 {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
                   const key = `${l.id}-${d}`;
                   const val = changes[key] || '';
+                  const iso = toISO(year, month, d);
                   const isFuture = new Date(year, month, d) > new Date();
+                  const isPreJoin = !!l.joiningDate && iso < l.joiningDate;
+                  const locked = isFuture || isPreJoin;
                   const color = STATUS_COLORS[val] || colors.slate[200];
+                  const onCellPress = () => {
+                    if (isFuture) {
+                      Alert.alert('Not allowed', `Future date (${iso}) par attendance mark nahi ho sakti.`);
+                      return;
+                    }
+                    if (isPreJoin) {
+                      Alert.alert('Not allowed', `Joining date (${l.joiningDate}) se pehle attendance mark nahi ho sakti.`);
+                      return;
+                    }
+                    toggle(l.id, d, l.joiningDate);
+                  };
                   return (
                     <TouchableOpacity
                       key={d}
                       style={[s.dayCell, { backgroundColor: val ? color + '20' : colors.slate[50] }]}
-                      onPress={() => toggle(l.id, d)}
-                      disabled={isFuture}
+                      onPress={onCellPress}
                     >
                       <Text style={[s.dayText, { color: val ? color : colors.slate[400] }]}>{val || '-'}</Text>
                     </TouchableOpacity>

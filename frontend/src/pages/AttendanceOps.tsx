@@ -233,11 +233,12 @@ export default function AttendanceOps() {
                   for (let d = 1; d <= daysInMonth; d++) {
                     if (d < joinDay) continue;
                     const dt = toISO(year, month, d);
-                    const status = dt > todayISO ? "ABSENT" : eff(dt);
-                    if (status === "PRESENT") p++;
+                    if (dt > todayISO) continue;
+                    if (eff(dt) === "PRESENT") p++;
                     else ab++;
                   }
-                  const activeDays = daysInMonth - joinDay + 1;
+                  const lastCountedDay = isFutureMonth ? 0 : isCurrentMonth ? today.getDate() : daysInMonth;
+                  const activeDays = Math.max(0, lastCountedDay - joinDay + 1);
                   const pct = activeDays > 0 ? (p / activeDays) * 100 : 0;
                   const okCriteria = pct >= 75;
                   return (
@@ -259,18 +260,13 @@ export default function AttendanceOps() {
                         }
                         const rec = dayLookup[date];
                         const future = date > todayISO;
-                        const cur = future ? "ABSENT" : (eff(date));
+                        const cur = eff(date);
                         const changed = !future && pending[`${l.id}|${date}`] !== undefined;
                         return (
                           <td key={i} className={`border border-slate-200 px-1 py-2 ${future ? "bg-slate-50" : ""} ${changed ? "bg-amber-50" : ""}`}>
                             <div className="flex items-center justify-center">
                               {future ? (
-                                <span
-                                  title={`${date}: Absent (upcoming)`}
-                                  className="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white bg-red-500"
-                                >
-                                  A
-                                </span>
+                                <span title={`${date}: Upcoming`} className="text-xs text-slate-300">–</span>
                               ) : (
                                 <button
                                   type="button"
@@ -362,10 +358,11 @@ export default function AttendanceOps() {
                   for (let d = 1; d <= daysInMonth; d++) {
                     if (d < joinDay) continue;
                     const date = toISO(year, month, d);
-                    const status = date > todayISO ? "ABSENT" : (dayLookup[date]?.status === "PRESENT" ? "PRESENT" : "ABSENT");
-                    if (status === "PRESENT") p++; else ab++;
+                    if (date > todayISO) continue;
+                    if (dayLookup[date]?.status === "PRESENT") p++; else ab++;
                   }
-                  const activeDays = daysInMonth - joinDay + 1;
+                  const lastCountedDay = isFutureMonth ? 0 : isCurrentMonth ? today.getDate() : daysInMonth;
+                  const activeDays = Math.max(0, lastCountedDay - joinDay + 1);
                   const pct = activeDays > 0 ? (p / activeDays) * 100 : 0;
                   const okCriteria = pct >= 75;
                   return (
@@ -387,18 +384,22 @@ export default function AttendanceOps() {
                         }
                         const future = date > todayISO;
                         const rec = dayLookup[date];
-                        const cur = future ? "ABSENT" : (rec?.status === "PRESENT" ? "PRESENT" : "ABSENT");
+                        const cur = rec?.status === "PRESENT" ? "PRESENT" : "ABSENT";
                         return (
                           <td key={i} className={`border border-slate-200 px-1 py-2 ${future ? "bg-slate-50" : ""}`}>
                             <div className="flex items-center justify-center">
+                              {future ? (
+                                <span title={`${date}: Upcoming`} className="text-xs text-slate-300">–</span>
+                              ) : (
                               <span
-                                title={`${date}: ${cur === "PRESENT" ? "Present" : "Absent"}${future ? " (upcoming)" : ""}`}
+                                title={`${date}: ${cur === "PRESENT" ? "Present" : "Absent"}`}
                                 className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ${
                                   cur === "PRESENT" ? "bg-emerald-500" : "bg-red-500"
                                 }`}
                               >
                                 {cur === "PRESENT" ? "P" : "A"}
                               </span>
+                              )}
                             </div>
                           </td>
                         );

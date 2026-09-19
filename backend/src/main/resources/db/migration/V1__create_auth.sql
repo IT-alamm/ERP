@@ -1,15 +1,15 @@
 CREATE TABLE IF NOT EXISTS permissions (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(60) NOT NULL UNIQUE,
     description VARCHAR(255),
-    created_at DATETIME
+    created_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS roles (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(40) NOT NULL UNIQUE,
     description VARCHAR(255),
-    created_at DATETIME
+    created_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS role_permissions (
@@ -21,26 +21,26 @@ CREATE TABLE IF NOT EXISTS role_permissions (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     username VARCHAR(60) NOT NULL UNIQUE,
     email VARCHAR(120) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role_id BIGINT NOT NULL,
-    enabled BIT(1) NOT NULL DEFAULT 1,
-    last_login DATETIME,
-    created_at DATETIME,
-    updated_at DATETIME,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    last_login TIMESTAMP,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
     CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles (id)
 );
 CREATE INDEX idx_users_username ON users (username);
 CREATE INDEX idx_users_email ON users (email);
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     token VARCHAR(500) NOT NULL UNIQUE,
     user_id BIGINT NOT NULL,
-    expiry_date DATETIME NOT NULL,
-    revoked BIT(1) NOT NULL DEFAULT 0,
+    expiry_date TIMESTAMP NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_rt_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
@@ -57,10 +57,10 @@ INSERT INTO permissions (name, description) VALUES
 ('LEAVE_APPROVE', 'Approve leaves'),
 ('PROJECT_MANAGE', 'Manage projects'),
 ('REPORT_VIEW', 'View reports and audit')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
+ON CONFLICT (name) DO NOTHING;
 
 -- Seed roles
 INSERT INTO roles (name, description) VALUES
 ('ROLE_ADMIN', 'Administrator'),
 ('ROLE_LABOUR', 'Labour worker')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
+ON CONFLICT (name) DO NOTHING;

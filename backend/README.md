@@ -1,15 +1,16 @@
 # Labour Management System (Modular Monolith)
 
-Spring Boot 3 + MySQL. **Docker nahi, Redis nahi, S3 nahi, payment gateway nahi** — ye sab Phase 9 me baad me lagega.
+Spring Boot 3 + PostgreSQL (Supabase prod). **Docker nahi, Redis nahi, S3 nahi, payment gateway nahi** — ye sab Phase 9 me baad me lagega.
 
 ## Chahiye
 - Java 17, Maven 3.9+
-- MySQL 8 running on localhost:3306
+- Prod: Supabase Postgres (`SPRING_PROFILES_ACTIVE=prod` + `DB_URL`/`DB_USERNAME`/`DB_PASSWORD` env vars)
+- Test: MySQL 8 running on localhost:3306
 
 ## Setup
 1. `.env.example` ko copy karke `.env` banao (ya environment variables set karo):
    - `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`
-2. MySQL me database khud ban jayegi (`createDatabaseIfNotExist=true`). Tables **Flyway** banayega (`V1..V9`).
+2. Supabase me database pehle se bani hoti hai (`postgres`). Tables **Flyway** banayega (`V1..V11`, PostgreSQL dialect).
 3. Run:
    ```
    mvn spring-boot:run
@@ -17,6 +18,15 @@ Spring Boot 3 + MySQL. **Docker nahi, Redis nahi, S3 nahi, payment gateway nahi*
    Ya `application-dev.yml` profile ke saath IDE se `LabourManagementApplication` chalao.
 
 4. Default admin (sirf dev): `admin / Admin@123` — login ke baad turant password change karna.
+
+## Docker (deploy)
+1. `backend/.env.example` ko copy karke `backend/.env` banao, real values bharo (Supabase `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`, strong `JWT_SECRET`). Ye file commit mat karna.
+2. Run:
+   ```
+   docker compose -f backend/docker-compose.yml up -d --build
+   ```
+   Pehle boot par Flyway `V1..V11` tables banayega. Health: `http://localhost:8080/actuator/health`.
+3. Logs: `docker compose -f backend/docker-compose.yml logs -f api`.
 
 ## API
 - Swagger: `http://localhost:8080/swagger-ui.html`

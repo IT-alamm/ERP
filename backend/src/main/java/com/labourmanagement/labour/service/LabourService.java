@@ -98,6 +98,7 @@ public class LabourService {
         if (req.designation() != null) labour.setDesignation(req.designation());
         if (req.department() != null) labour.setDepartment(req.department());
         if (req.dailyWage() != null) labour.setDailyWage(req.dailyWage());
+        if (req.joiningDate() != null) labour.setJoiningDate(req.joiningDate());
         auditService.log("UPDATE_LABOUR", "Labour", id, old, labour.getFirstName() + "|" + labour.getDailyWage());
         return labourMapper.toResponse(labourRepository.save(labour));
     }

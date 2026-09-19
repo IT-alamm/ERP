@@ -19,6 +19,7 @@ interface Labour {
   department: string;
   dailyWage: number;
   status: string;
+  joiningDate: string | null;
 }
 
 const EMPTY_FORM = {
@@ -27,7 +28,7 @@ const EMPTY_FORM = {
 };
 
 const EMPTY_EDIT = {
-  firstName: '', lastName: '', phone: '', designation: '', department: '', dailyWage: '',
+  firstName: '', lastName: '', phone: '', designation: '', department: '', dailyWage: '', joiningDate: '',
 };
 
 export default function LabourDirectoryScreen() {
@@ -124,6 +125,7 @@ export default function LabourDirectoryScreen() {
       designation: l.designation,
       department: l.department,
       dailyWage: String(l.dailyWage),
+      joiningDate: l.joiningDate ?? '',
     });
     setShowEdit(true);
   }, []);
@@ -140,6 +142,7 @@ export default function LabourDirectoryScreen() {
         designation: editForm.designation,
         department: editForm.department,
         dailyWage: editForm.dailyWage ? Number(editForm.dailyWage) : 0,
+        joiningDate: editForm.joiningDate || undefined,
       });
       setShowEdit(false);
       setEditId(null);
@@ -251,6 +254,7 @@ export default function LabourDirectoryScreen() {
           <Field label="Designation"><Input value={editForm.designation} onChangeText={(v) => updateEditField('designation', v)} /></Field>
           <Field label="Department"><Input value={editForm.department} onChangeText={(v) => updateEditField('department', v)} /></Field>
           <Field label="Daily Wage"><Input value={editForm.dailyWage} onChangeText={(v) => updateEditField('dailyWage', v)} keyboardType="numeric" /></Field>
+          <Field label="Joining Date (YYYY-MM-DD)"><Input value={editForm.joiningDate} onChangeText={(v) => updateEditField('joiningDate', v)} placeholder="2026-09-19" /></Field>
           <Btn onPress={handleUpdate} disabled={submitting} style={s.submitBtn}>{submitting ? 'Updating...' : 'Update Labour'}</Btn>
         </AppModal>
       )}
