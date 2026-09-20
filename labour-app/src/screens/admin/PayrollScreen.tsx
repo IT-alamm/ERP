@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { colors } from '../../theme/colors';
 import ScreenHeader from '../../components/ScreenHeader';
 import { useNavigation } from '@react-navigation/native';
@@ -7,21 +7,24 @@ import { useNavigation } from '@react-navigation/native';
 export default function PayrollScreen() {
   const navigation = useNavigation<any>();
   return (
-    <View style={s.root}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScreenHeader title="Payroll" currentRoute="Payroll" onNavigate={(route) => navigation.navigate(route)} />
-      <Text style={s.title}>Payroll Generation</Text>
-      <View style={s.card}>
-        <Text style={s.icon}>₹</Text>
-        <Text style={s.heading}>Coming Soon</Text>
-        <Text style={s.sub}>Payroll generation feature is under development.</Text>
-      </View>
+      <ScrollView style={s.root} contentContainerStyle={s.container}>
+        <Text style={s.title}>Payroll Generation</Text>
+        <View style={s.card}>
+          <Text style={s.icon}>₹</Text>
+          <Text style={s.heading}>Coming Soon</Text>
+          <Text style={s.sub}>Payroll generation feature is under development.</Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg, padding: 16 },
-  title: { fontSize: 22, fontWeight: '800', color: colors.navy950, marginBottom: 20 },
+  root: { flex: 1, backgroundColor: colors.bg },
+  container: { padding: 16 },
+  title: { fontSize: 22, fontWeight: '800', color: colors.navy950, marginBottom: 16 },
   card: { backgroundColor: '#fff', borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: colors.slate[200] },
   icon: { fontSize: 48, fontWeight: '800', color: colors.brand600 },
   heading: { fontSize: 20, fontWeight: '700', color: colors.slate[800], marginTop: 12 },

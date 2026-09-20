@@ -84,12 +84,20 @@ export default function AdminDashboardScreen() {
           </Card>
         ) : stats ? (
           <View style={s.grid}>
-            <Stat label="Total Workforce" value={String(stats.totalLabours)} />
-            <Stat label="Active Today" value={String(stats.activeLabours)} hint="Currently active" />
-            <Stat label="Active Sites" value={String(stats.totalProjects)} />
-            <Stat label="Pending Leaves" value={String(stats.pendingLeaves)} />
+            <TouchableOpacity onPress={() => navigation.navigate('Directory')} activeOpacity={0.7}>
+              <Stat label="Total Workforce" value={String(stats.totalLabours)} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Directory')} activeOpacity={0.7}>
+              <Stat label="Active" value={String(stats.activeLabours)} hint="Currently active" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Projects')} activeOpacity={0.7}>
+              <Stat label="Active Sites" value={String(stats.totalProjects)} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Leaves')} activeOpacity={0.7}>
+              <Stat label="Pending Leaves" value={String(stats.pendingLeaves)} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={openPresentList} activeOpacity={0.7}>
-              <Stat label="Present Today — tap to view" value={String(stats.presentToday)} />
+              <Stat label="Present" value={String(stats.presentToday)} />
             </TouchableOpacity>
           </View>
         ) : null}

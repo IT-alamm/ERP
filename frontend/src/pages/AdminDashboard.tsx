@@ -56,10 +56,10 @@ export default function AdminDashboard() {
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-5">
         <Stat label="Total workforce" value={String(stats?.totalLabours ?? "—")} hint="Registered personnel" />
-        <Stat label="Active today" value={String(stats?.activeLabours ?? "—")} hint="Enabled accounts" />
+        <Stat label="Active" value={String(stats?.activeLabours ?? "—")} hint="Enabled accounts" />
         <Stat label="Active sites" value={String(stats?.totalProjects ?? "—")} hint="Full capacity" />
         <Stat label="Pending leaves" value={String(stats?.pendingLeaves ?? "—")} hint="Awaiting approval" />
-        <Stat label="Present today" value={String(stats?.presentToday ?? "—")} hint="Punch ingress · click to view" onClick={openPresentList} />
+        <Stat label="Present" value={String(stats?.presentToday ?? "—")} hint="Punch ingress" onClick={openPresentList} />
       </div>
       {showPresent && (
         <Modal title={`Present Today (${presentList.length})`} onClose={() => setShowPresent(false)}>
