@@ -6,7 +6,9 @@ import com.labourmanagement.attendance.repository.AttendanceRepository;
 import com.labourmanagement.audit.service.AuditService;
 import com.labourmanagement.common.enums.AttendanceStatus;
 import com.labourmanagement.common.exception.*;
+import com.labourmanagement.labour.dto.LabourResponse;
 import com.labourmanagement.labour.entity.Labour;
+import com.labourmanagement.labour.mapper.LabourMapper;
 import com.labourmanagement.labour.repository.LabourRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final LabourRepository labourRepository;
+    private final LabourMapper labourMapper;
     private final AuditService auditService;
 
     private AttendanceResponse toResponse(Attendance a) {
@@ -194,6 +197,22 @@ public class AttendanceService {
         var labour = labourRepository.findByUserUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Labour profile not found"));
         return byLabour(labour.getId(), pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LabourResponse> todayPresent(Long adminId) {
+        // Sirf is admin ke labours me se aaj present - dusre admin ka data nahi.
+        List<Long> ownIds = adminId == null ? List.of() : labourRepository.findIdsByCreatedBy(adminId);
+        if (ownIds.isEmpty()) {
+            return List.of();
+        }
+        List<Long> presentIds = attendanceRepository
+                .findByAttendanceDateAndStatus(LocalDate.now(), AttendanceStatus.PRESENT)
+                .stream().map(Attendance::getLabourId).filter(ownIds::contains).distinct().toList();
+        if (presentIds.isEmpty()) {
+            return List.of();
+        }
+        return labourRepository.findAllById(presentIds).stream().map(labourMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)

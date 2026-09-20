@@ -35,13 +35,15 @@ public class AdminLabourController {
     @GetMapping
     @PreAuthorize("hasAuthority('LABOUR_VIEW')")
     public ResponseEntity<ApiResponse<Page<LabourResponse>>> list(
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) LabourStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        // Admin sabhi labours dekhta hai - createdBy scoping nahi.
+        // Har admin sirf apne banaye labours dekhta hai - dusre admin ka data nahi.
+        Long adminId = userRepository.findByUsername(userDetails.getUsername()).map(User::getId).orElse(null);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(ApiResponse.success("Labours fetched", labourService.getAll(search, status, null, pageable)));
+        return ResponseEntity.ok(ApiResponse.success("Labours fetched", labourService.getAll(search, status, adminId, pageable)));
     }
 
     @GetMapping("/{id}")

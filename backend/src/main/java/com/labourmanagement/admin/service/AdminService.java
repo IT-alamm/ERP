@@ -22,14 +22,14 @@ public class AdminService {
     private final AttendanceRepository attendanceRepository;
 
     public DashboardStatsResponse stats(Long adminId) {
-        // Admin sabhi labours dekhta hai (single-company ERP) - createdBy scoping nahi.
-        long total = labourRepository.count();
-        long active = labourRepository.countByStatus(LabourStatus.ACTIVE);
+        // Har admin ko sirf apne labours ke stats - dusre admin ka data nahi.
+        long total = labourRepository.countByCreatedBy(adminId);
+        long active = labourRepository.countByCreatedByAndStatus(adminId, LabourStatus.ACTIVE);
         long projects = projectRepository.count();
         long pendingLeaves = leaveRepository.countByStatus(LeaveStatus.PENDING);
 
         LocalDate today = LocalDate.now();
-        List<Long> labourIds = labourRepository.findAllIds();
+        List<Long> labourIds = labourRepository.findIdsByCreatedBy(adminId);
         long presentToday = 0;
         if (!labourIds.isEmpty()) {
             presentToday = attendanceRepository.countByLabourIdInAndDateAndStatus(labourIds, today, AttendanceStatus.PRESENT);

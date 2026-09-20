@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { api, unwrap, extractError } from '../../services/api';
-import { Card, Stat } from '../../components/ui';
+import { AppModal, Card, Stat } from '../../components/ui';
 import ScreenHeader from '../../components/ScreenHeader';
 import { colors } from '../../theme/colors';
 
@@ -20,6 +20,10 @@ export default function AdminDashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPresent, setShowPresent] = useState(false);
+  const [presentList, setPresentList] = useState<{ id: number; firstName: string; lastName: string | null; employeeCode: string }[]>([]);
+  const [presentLoading, setPresentLoading] = useState(false);
+  const [presentError, setPresentError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -44,6 +48,20 @@ export default function AdminDashboardScreen() {
     await fetchStats();
     setRefreshing(false);
   }, [fetchStats]);
+
+  const openPresentList = useCallback(async () => {
+    setShowPresent(true);
+    setPresentLoading(true);
+    setPresentError(null);
+    try {
+      const res = await api.get('/admin/attendance/today-present');
+      setPresentList(unwrap<{ id: number; firstName: string; lastName: string | null; employeeCode: string }[]>(res));
+    } catch (e) {
+      setPresentError(extractError(e));
+    } finally {
+      setPresentLoading(false);
+    }
+  }, []);
 
   return (
     <View style={s.root}>
@@ -70,10 +88,38 @@ export default function AdminDashboardScreen() {
             <Stat label="Active Today" value={String(stats.activeLabours)} hint="Currently active" />
             <Stat label="Active Sites" value={String(stats.totalProjects)} />
             <Stat label="Pending Leaves" value={String(stats.pendingLeaves)} />
-            <Stat label="Present Today" value={String(stats.presentToday)} />
+            <TouchableOpacity onPress={openPresentList} activeOpacity={0.7}>
+              <Stat label="Present Today — tap to view" value={String(stats.presentToday)} />
+            </TouchableOpacity>
           </View>
         ) : null}
       </ScrollView>
+
+      {showPresent && (
+        <AppModal title={`Present Today (${presentList.length})`} onClose={() => setShowPresent(false)}>
+          {presentLoading ? (
+            <ActivityIndicator size="large" color={colors.brand600} style={{ marginVertical: 20 }} />
+          ) : presentError ? (
+            <Text style={s.errorText}>{presentError}</Text>
+          ) : presentList.length === 0 ? (
+            <Text style={s.emptyText}>Aaj koi present nahi hai</Text>
+          ) : (
+            <FlatList
+              data={presentList}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item }) => (
+                <View style={s.presentRow}>
+                  <View style={s.presentDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.presentName}>{item.firstName} {item.lastName ?? ''}</Text>
+                    <Text style={s.presentCode}>{item.employeeCode}</Text>
+                  </View>
+                </View>
+              )}
+            />
+          )}
+        </AppModal>
+      )}
     </View>
   );
 }
@@ -88,4 +134,9 @@ const s = StyleSheet.create({
   grid: { gap: 10 },
   errorCard: { padding: 16 },
   errorText: { color: colors.red[600], textAlign: 'center' },
+  emptyText: { color: colors.slate[500], textAlign: 'center', paddingVertical: 16 },
+  presentRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.slate[100] },
+  presentDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.emerald[500] },
+  presentName: { fontSize: 14, fontWeight: '700', color: colors.slate[900] },
+  presentCode: { fontSize: 12, color: colors.slate[500], marginTop: 1 },
 });

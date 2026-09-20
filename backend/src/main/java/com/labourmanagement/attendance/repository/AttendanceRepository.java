@@ -19,6 +19,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     List<Attendance> findByAttendanceDateBetween(LocalDate start, LocalDate end);
 
+    List<Attendance> findByAttendanceDateAndStatus(LocalDate date, com.labourmanagement.common.enums.AttendanceStatus status);
+
     long countByAttendanceDateAndStatus(LocalDate date, com.labourmanagement.common.enums.AttendanceStatus status);
 
     @Query("SELECT a.labourId, a.status, COUNT(a) FROM Attendance a " +
