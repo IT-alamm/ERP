@@ -82,29 +82,33 @@ export default function AttendanceScreen() {
   }, []);
 
   const fetchAll = useCallback(async () => {
+    let labourList: Labour[] = [];
     try {
-      const [labourRes, attRes] = await Promise.all([
-        api.get('/admin/labours', { params: { page: 0, size: 100 } }),
-        api.get('/admin/attendance/month', { params: { year, month: month + 1 } }),
-      ]);
-      const labourList = unwrap<Page<Labour>>(labourRes).content;
+      const labourRes = await api.get('/admin/labours', { params: { page: 0, size: 100 } });
+      labourList = unwrap<Page<Labour>>(labourRes).content;
       setLabours(labourList);
-
-      const attList = unwrap<AttendanceRecord[]>(attRes);
-      setAttendance(attList);
-
-      const dim = getDaysInMonth(year, month);
-      const grid = buildEmptyGrid(labourList, year, month, dim);
-      attList.forEach((a) => {
-        const dayNum = new Date(a.attendanceDate).getDate();
-        const s = a.status === 'PRESENT' ? 'P' : a.status === 'HALF_DAY' ? 'H' : a.status === 'LEAVE' ? 'L' : 'A';
-        grid[`${a.labourId}-${dayNum}`] = s;
-      });
-      setChanges(grid);
-      setInitialGrid({ ...grid });
     } catch (e) {
-      Alert.alert('Error', extractError(e));
+      Alert.alert('Error', `Labours: ${extractError(e)}`);
     }
+
+    let attList: AttendanceRecord[] = [];
+    try {
+      const attRes = await api.get('/admin/attendance/month', { params: { year, month: month + 1 } });
+      attList = unwrap<AttendanceRecord[]>(attRes);
+      setAttendance(attList);
+    } catch (e) {
+      Alert.alert('Error', `Attendance: ${extractError(e)}`);
+    }
+
+    const dim = getDaysInMonth(year, month);
+    const grid = buildEmptyGrid(labourList, year, month, dim);
+    attList.forEach((a) => {
+      const dayNum = Number(a.attendanceDate.slice(8, 10));
+      const s = a.status === 'PRESENT' ? 'P' : a.status === 'HALF_DAY' ? 'H' : a.status === 'LEAVE' ? 'L' : 'A';
+      grid[`${a.labourId}-${dayNum}`] = s;
+    });
+    setChanges(grid);
+    setInitialGrid({ ...grid });
   }, [year, month, buildEmptyGrid]);
 
   const load = useCallback(async () => {
