@@ -23,9 +23,9 @@ public interface LabourRepository extends JpaRepository<Labour, Long> {
     @Query("SELECT l FROM Labour l WHERE " +
             "(:createdBy IS NULL OR l.createdBy = :createdBy) AND " +
             "(:status IS NULL OR l.status = :status) AND " +
-            "(:search IS NULL OR LOWER(l.firstName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-            "OR LOWER(l.lastName) LIKE LOWER(CONCAT('%', :search, '%')) " +
-            "OR LOWER(l.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')))")
+            "(:search IS NULL OR (LOWER(l.firstName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(COALESCE(l.lastName, '')) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "OR LOWER(l.employeeCode) LIKE LOWER(CONCAT('%', :search, '%'))))")
     Page<Labour> search(@Param("createdBy") Long createdBy, @Param("search") String search, @Param("status") LabourStatus status, Pageable pageable);
 
     long countByCreatedBy(Long createdBy);

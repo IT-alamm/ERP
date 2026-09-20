@@ -10,12 +10,12 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://your-backend-host/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://erp-2-1uoa.onrender.com/api/v1"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://your-backend-host/api/v1"
+        "EXPO_PUBLIC_API_URL": "https://erp-2-1uoa.onrender.com/api/v1"
       }
     }
   }
