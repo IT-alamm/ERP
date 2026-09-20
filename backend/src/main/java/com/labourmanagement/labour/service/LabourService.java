@@ -65,7 +65,10 @@ public class LabourService {
 
     @Transactional(readOnly = true)
     public Page<LabourResponse> getAll(String search, LabourStatus status, Long createdByUserId, Pageable pageable) {
-        return labourRepository.search(createdByUserId, search, status, pageable).map(labourMapper::toResponse);
+        // NULL search Postgres par CONCAT me type-inference error deta hai (500),
+        // isliye blank normalize karo - LIKE '%%' sab match karta hai, same semantics.
+        String q = (search == null || search.isBlank()) ? "" : search;
+        return labourRepository.search(createdByUserId, q, status, pageable).map(labourMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
