@@ -18,13 +18,21 @@ export function CardHeader({ title, sub, right }: { title: string; sub?: string;
   );
 }
 
-export function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <Card className="p-4">
+export function Stat({ label, value, hint, onClick }: { label: string; value: string; hint?: string; onClick?: () => void }) {
+  const inner = (
+    <>
       <p className="text-[11px] font-semibold tracking-wider text-slate-500 uppercase">{label}</p>
       <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
       {hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}
-    </Card>
+    </>
+  );
+  if (!onClick) {
+    return <Card className="p-4">{inner}</Card>;
+  }
+  return (
+    <button type="button" onClick={onClick} className="cursor-pointer text-left transition hover:ring-2 hover:ring-indigo-300" title="Click to view list">
+      <Card className="p-4">{inner}</Card>
+    </button>
   );
 }
 
