@@ -32,6 +32,11 @@ public interface LabourRepository extends JpaRepository<Labour, Long> {
 
     long countByCreatedByAndStatus(Long createdBy, LabourStatus status);
 
+    long countByStatus(LabourStatus status);
+
+    @Query("SELECT l.id FROM Labour l")
+    List<Long> findAllIds();
+
     @Query("SELECT l.id FROM Labour l WHERE l.createdBy = :createdBy")
     List<Long> findIdsByCreatedBy(@Param("createdBy") Long createdBy);
 }

@@ -3,15 +3,11 @@ package com.labourmanagement.attendance.controller;
 import com.labourmanagement.attendance.dto.*;
 import com.labourmanagement.attendance.service.AttendanceService;
 import com.labourmanagement.common.response.ApiResponse;
-import com.labourmanagement.security.entity.User;
-import com.labourmanagement.security.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 public class AdminAttendanceController {
 
     private final AttendanceService attendanceService;
-    private final UserRepository userRepository;
 
     @PostMapping
     @PreAuthorize("hasAuthority('ATTENDANCE_MARK')")
@@ -57,12 +52,11 @@ public class AdminAttendanceController {
     @GetMapping("/summary")
     @PreAuthorize("hasAuthority('ATTENDANCE_VIEW')")
     public ResponseEntity<ApiResponse<java.util.List<AttendanceSummaryResponse>>> summary(
-            @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam int year,
             @RequestParam int month) {
-        Long adminId = userRepository.findByUsername(userDetails.getUsername()).map(User::getId).orElse(null);
+        // Admin sabhi labours ka summary dekhta hai - createdBy scoping nahi.
         return ResponseEntity.ok(ApiResponse.success("Monthly summary fetched",
-                attendanceService.monthlySummaryForAdmin(year, month, adminId)));
+                attendanceService.monthlySummary(year, month)));
     }
 
     @GetMapping("/month")
