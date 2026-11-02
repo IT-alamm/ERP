@@ -34,15 +34,6 @@ interface Profile {
 const pad = (n: number) => String(n).padStart(2, "0");
 const toISO = (y: number, m: number, d: number) => `${y}-${pad(m)}-${pad(d)}`;
 
-const dayStyle: Record<string, string> = {
-  PRESENT: "bg-emerald-500 text-white hover:bg-emerald-600",
-  ABSENT: "bg-red-500 text-white hover:bg-red-600",
-  HALF_DAY: "bg-orange-400 text-white hover:bg-orange-500",
-  LEAVE: "bg-purple-400 text-white hover:bg-purple-500",
-  HOLIDAY: "bg-sky-400 text-white hover:bg-sky-500",
-  WEEK_OFF: "bg-slate-400 text-white hover:bg-slate-500",
-};
-
 export default function AttendanceOps() {
   const { isAdmin } = useAuth();
   const [labours, setLabours] = useState<Labour[]>([]);

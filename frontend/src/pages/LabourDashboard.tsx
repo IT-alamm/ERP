@@ -14,11 +14,6 @@ interface Profile {
   status: string;
 }
 
-interface ExpenseTotal {
-  labourId: number;
-  total: number;
-}
-
 interface Expense {
   id: number;
   labourId: number;

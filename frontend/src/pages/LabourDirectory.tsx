@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, unwrap } from "../lib/api";
-import { Badge, Btn, Card, ErrorText, Field, Input, Modal, Select, extractError } from "../components/ui";
+import { Badge, Btn, Card, ErrorText, Field, Input, Modal, extractError } from "../components/ui";
 
 interface Labour {
   id: number;
@@ -38,7 +38,6 @@ interface ExpenseTotal {
 export default function LabourDirectory() {
   const [rows, setRows] = useState<Labour[]>([]);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [summary, setSummary] = useState<Record<number, Summary>>({});
@@ -55,7 +54,7 @@ export default function LabourDirectory() {
 
   const load = async () => {
     try {
-      const r = await api.get("/admin/labours", { params: { search: search || undefined, status: status || undefined, page, size: 10 } });
+      const r = await api.get("/admin/labours", { params: { search: search || undefined, page, size: 10 } });
       const data = unwrap<Page<Labour>>(r);
       setRows(data.content);
       setTotalPages(data.totalPages);
@@ -127,12 +126,6 @@ export default function LabourDirectory() {
     } catch (err) {
       setError(extractError(err));
     }
-  };
-
-  const toggleStatus = async (l: Labour) => {
-    const next = l.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-    await api.patch(`/admin/labours/${l.id}/status`, null, { params: { status: next } });
-    load();
   };
 
   const openExpense = (l: Labour) => {
